@@ -1,6 +1,10 @@
 import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
+
+# Required, Bug caused by PyQt5
+matplotlib.use('tkagg')
 
 def show_cmap(A, image_size, wait=1, title='show_cmap', cmap=cv.COLORMAP_JET):
 	if len(A.shape) == 1:
