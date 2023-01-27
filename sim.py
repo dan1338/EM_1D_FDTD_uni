@@ -15,6 +15,10 @@ class SimulationParams:
         self.eps = np.ones(Nx)
         self.mu = np.ones(Nx)
 
+    def set_material(self, mask, name):
+        self.eps[mask] = materials[name].eps
+        self.mu[mask] = materials[name].mu
+
     def find_courant_timestep(self):
         return (self.dx / (2 * c0))
 
@@ -36,6 +40,7 @@ class Simulation:
 
         # TFSF source
         self.source = None
+        self.source_hist = np.zeros((params.Nt,))
 
     def run(self):
         # Unpack common vars
@@ -70,6 +75,8 @@ class Simulation:
                 Hsrc = -src(self.t + dx/(2 * c0) - dt / 2)
                 E[src.k] -= mE[src.k] * Hsrc / dx
                 H[src.k-1] -= mH[src.k-1] * Esrc / dx
+                # Record source history
+                self.source_hist[it] = Esrc
 
             yield it
             self.t += dt
@@ -93,30 +100,4 @@ class PointHistory:
 
     def __getitem__(self, k):
         return self.points[k]
-
-if __name__ == '__main__':
-    params = SimulationParams(Nx=128, dx=0.04, Nt=800)
-    params.eps[60:100] = 12.5
-    print(params)
-
-    sim = Simulation(params)
-
-    sim.source = GaussianSource(k=24, t0=(30*params.dx) / c0, fmax=433e6)
-    #sim.source = SineSource(k=24, t0=(30*params.dx) / c0, f=433e6)
-
-    hist = PointHistory(params.Nt, [0, -1])
-
-    input('>')
-
-    for it in sim.run():
-        print(it, 'min=%e max=%e' % (sim.E.min(), sim.E.max()))
-
-        # Update point history
-        hist.update(sim, it)
-
-        # Visualize fields
-        show_cmap(sim.E, image_size=(640, 200), title='E', wait=int(1e3/120))
-        #show_plot(sim.E, sim.H)
-
-    hist.show()
 
