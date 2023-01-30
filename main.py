@@ -28,6 +28,9 @@ hist = PointHistory(params.Nt, [0, -1])
 print(params)
 input('>')
 
+# Precalc ior for display
+ior = (params.eps * params.mu) ** 0.5
+
 for it in sim.run():
     print(it, 'min=%e max=%e' % (sim.E.min(), sim.E.max()))
 
@@ -35,7 +38,7 @@ for it in sim.run():
     hist.update(sim, it)
 
     # Visualize fields
-    show_cmap(sim.E, image_size=(640, 200), title='E', wait=int(1e3/120))
+    show_cmap(sim.E, ior, image_size=(640, 200), title='E', wait=int(1e3/120))
     #show_plot(sim.E, sim.H)
 
 hist.show()
