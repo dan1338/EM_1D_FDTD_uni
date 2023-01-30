@@ -16,6 +16,7 @@ class MainWindow(QMainWindow):
         self.push_textinput('dx', 'dx - spacing of grid cells')
         self.push_textinput('Nt', 'Nt - number of time steps')
         self.push_textinput('freq', 'freq - excitation frequency')
+        self.push_textinput('ksrc', 'ksrc - source location')
         self.push_textinput('conf_path', 'Material config file path')
 
         self.push_checkbox('sine', 'Use sine source instead of gaussian')
@@ -80,12 +81,13 @@ should_show_plot = window['show_plot']
 L = Nx * dx
 
 # Source definition
-t0 = (0.25 * L) / c0
+t0 = (0.4 * L) / c0
+ksrc = int(window['ksrc'])
 freq = float(window['freq'])
 if window['sine']:
-    source = SineSource(k=24, t0=t0, f=freq)
+    source = SineSource(k=ksrc, t0=t0, f=freq)
 else:
-    source = GaussianSource(k=24, t0=t0, fmax=freq)
+    source = GaussianSource(k=ksrc, t0=t0, fmax=freq)
 
 # Setup point history
 hist = PointHistory(params.Nt, [0, -1])
@@ -97,6 +99,9 @@ sim.source = source
 print(params)
 input('>')
 
+# Precalc ior for display
+ior = (params.eps * params.mu) ** 0.5
+
 for it in sim.run():
     print(it, 'min=%e max=%e' % (sim.E.min(), sim.E.max()))
 
@@ -105,17 +110,24 @@ for it in sim.run():
 
     # Visualize fields
     if should_show_cmap:
-        show_cmap(sim.E, image_size=(640, 200), title='E', wait=int(1e3/120))
+        show_cmap(sim.E, ior, image_size=(640, 200), title='E', wait=int(1e3/120))
     if should_show_plot:
-        show_plot(sim.E, sim.H)
+        show_plot(sim.E, ior, sim.H)
 
 hist.show()
 
 # Show transmission/reflection
 s = np.fft.rfftfreq(params.Nt, params.dt)
+X = np.fft.rfft(sim.source_hist)
 R, T = hist.as_fft(0), hist.as_fft(-1)
+plt.plot(s, abs(X), label='source')
 plt.plot(s, abs(T), label='transmitted')
 plt.plot(s, abs(R), label='reflected')
+plt.legend()
+plt.show()
+TX, RX = (T/X)**2, (R/X)**2
+plt.plot(s, TX, label='transmittance')
+plt.plot(s, RX, label='reflectance')
 plt.legend()
 plt.show()
 

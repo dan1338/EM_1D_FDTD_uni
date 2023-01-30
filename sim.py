@@ -14,6 +14,7 @@ class SimulationParams:
             print('@@@ Unstable parameter configuration?', file=stderr)
         self.eps = np.ones(Nx)
         self.mu = np.ones(Nx)
+        self.ior = (self.eps + self.mu) ** 0.5
 
     def set_material(self, mask, name):
         self.eps[mask] = materials[name].eps
