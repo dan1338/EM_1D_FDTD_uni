@@ -22,6 +22,7 @@ class MainWindow(QMainWindow):
         self.push_checkbox('sine', 'Use sine source instead of gaussian')
         self.push_checkbox('show_cmap', 'Show colormap')
         self.push_checkbox('show_plot', 'Show plot')
+        self.push_checkbox('save_hist', 'Save point history')
 
         self.btn = self.push_item(QPushButton(self))
         self.btn.setText('Run')
@@ -117,17 +118,27 @@ for it in sim.run():
 hist.show()
 
 # Show transmission/reflection
-s = np.fft.rfftfreq(params.Nt, params.dt)
-X = np.fft.rfft(sim.source_hist)
-R, T = hist.as_fft(0), hist.as_fft(-1)
+N = len(sim.source_hist)
+s = np.fft.rfftfreq(params.Nt, params.dt)[:N//10]
+X = np.fft.rfft(sim.source_hist)[:N//10]
+R, T = hist.as_fft(0)[:N//10], hist.as_fft(-1)[:N//10]
 plt.plot(s, abs(X), label='source')
 plt.plot(s, abs(T), label='transmitted')
 plt.plot(s, abs(R), label='reflected')
 plt.legend()
 plt.show()
 TX, RX = (T/X)**2, (R/X)**2
-plt.plot(s, TX, label='transmittance')
-plt.plot(s, RX, label='reflectance')
+plt.plot(s, abs(TX), label='transmittance')
+plt.plot(s, abs(RX), label='reflectance')
 plt.legend()
 plt.show()
+
+# Save point recordings
+if window['save_hist']:
+    from time import time_ns
+    now = time_ns()
+
+    save = lambda n, t, A: np.save(f'hist{n}_{t}.npy', A)
+    save(0, now, hist[0])
+    save(1, now, hist[-1])
 
