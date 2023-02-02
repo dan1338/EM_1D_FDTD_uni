@@ -3,6 +3,10 @@ from phys import *
 from visual import *
 from sources import *
 
+"""
+Wrapper around simulation parameters.
+Calculates valid dt if not given
+"""
 class SimulationParams:
     def __init__(self, Nx: int, dx: float, Nt: int, **kwargs):
         self.Nx = Nx
@@ -29,6 +33,9 @@ class SimulationParams:
     def __repr__(self):
         return f'<SimulationParams Nx={self.Nx} dx={self.dx} Nt={self.Nt} dt={self.dt}>'
 
+"""
+Implements the FDTD method in 1D
+"""
 class Simulation:
     def __init__(self, params):
         self.params = params
@@ -82,6 +89,9 @@ class Simulation:
             yield it
             self.t += dt
 
+"""
+Helper class for recording Efield values over time
+"""
 class PointHistory:
     def __init__(self, Nt, points):
         self.points = {k: np.zeros(Nt) for k in points}
