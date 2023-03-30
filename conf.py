@@ -11,6 +11,8 @@ class MaterialConfig:
 
     def parse(self, fp):
         for line in fp:
+            if line.startswith('#'):
+                continue
             if line := line.strip():
                 name, indices = line.split(',')
                 a, b = indices.split(':')
