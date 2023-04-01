@@ -34,7 +34,7 @@ def show_plot(*args, **kwargs):
         plt.plot(x)
         plt.draw()
 
-    ylim = kwargs.get('ylim', (-1.5, 1.5))
+    ylim = kwargs.get('ylim', (-2, 2))
     plt.ylim(*ylim)
 
     wait = kwargs.get('wait', 1/60)
